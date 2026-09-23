@@ -66,5 +66,40 @@ scrollTo({top:0,behavior:"smooth"})}
 function answer(n,btn){if(answered)return;answered=true;let q=questions[i],bs=document.querySelectorAll(".opt");bs.forEach(b=>b.disabled=true);let fb=document.getElementById("fb");if(n===q.a){score++;btn.style.background="#dcfce7";btn.style.borderColor="#22c55e";fb.className="feedback ok";fb.textContent="✅ BETUL! Jawapan anda tepat."}else{btn.style.background="#fee2e2";btn.style.borderColor="#ef4444";bs[q.a].style.background="#dcfce7";bs[q.a].style.borderColor="#22c55e";fb.className="feedback no";fb.textContent="❌ SALAH. Jawapan yang betul ialah "+String.fromCharCode(65+q.a)+"."}document.getElementById("score").textContent=`Skor: ${score}`;document.getElementById("bar").style.width=((i+1)/questions.length*100)+"%";document.getElementById("next").textContent=i===questions.length-1?"LIHAT KEPUTUSAN 🎯":"SOALAN SETERUSNYA ➜";document.getElementById("next").classList.remove("hidden")}
 function nextQ(){if(i<questions.length-1){i++;showQ()}else{result()}}
 function result(){document.getElementById("game").classList.add("hidden");document.getElementById("result").classList.remove("hidden");let p=Math.round(score/questions.length*100);document.getElementById("student").textContent=name+" • "+klass;document.getElementById("final").textContent=score+" / "+questions.length;document.getElementById("pct").textContent=p+"%";document.getElementById("msg").textContent=p>=80?"Sangat baik! Teruskan ulang kaji.":p>=60?"Baik! Ulang kaji semula topik yang masih kurang dikuasai.":"Teruskan latihan dan ulang kaji semula topik dalam bahan."}
-async function sendScore(){let b=document.getElementById("send"),s=document.getElementById("status"),p=Math.round(score/questions.length*100);b.disabled=true;s.textContent="Menghantar skor...";try{await fetch(WEB_APP_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({nama:name,kelas:klass,skor:score+"/"+questions.length,peratus:p+"%"})});s.textContent="✅ Skor telah dihantar. Sila semak Google Sheets."}catch(e){s.textContent="⚠️ Penghantaran gagal. Semak Web App Google Sheets.";b.disabled=false}}
+async function sendScore(){
+  const nama=document.getElementById("nama").value.trim();
+  const kelas=document.getElementById("kelas").value.trim();
+  const skor=score;
+  const peratus=Math.round(score/questions.length*100);
+  const b=document.getElementById("send");
+  const s=document.getElementById("status");
+
+  if(!nama||!kelas){
+    alert("Sila masukkan nama dan kelas.");
+    return;
+  }
+
+  b.disabled=true;
+  s.textContent="Menghantar skor...";
+
+  try{
+    await fetch("https://script.google.com/macros/s/AKfycby4jW-gO1b6G_mYhpzCWF2Xuh8Ii5qmBnacFS3CGvbsQ0k_VMwJkPX4zePZQTDZ52o7/exec",{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({
+        nama:nama,
+        kelas:kelas,
+        skor:skor,
+        peratus:peratus
+      })
+    });
+
+    s.textContent="✅ Skor berjaya dihantar ke Google Sheets.";
+  }catch(error){
+    s.textContent="⚠️ Penghantaran gagal. Sila cuba lagi.";
+  }
+
+  b.disabled=false;
+}
 </script></body></html>
